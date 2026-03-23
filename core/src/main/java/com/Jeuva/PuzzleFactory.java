@@ -10,7 +10,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 1",
-                "Ce code calcule la factorielle d'un nombre.\nUne boucle multiplie progressivement le résultat.",
+                "Ce code calcule la factorielle d'un nombre",
                 Arrays.asList(
                     "int n = 5;",
                     "int result = 1;",
@@ -23,7 +23,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 2",
-                "Ce code trouve le plus grand entre deux nombres\net l'affiche dans la console.",
+                "Ce code trouve le plus grand entre deux nombres",
                 Arrays.asList(
                     "int a = 8;",
                     "int b = 3;",
@@ -36,7 +36,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 3",
-                "Ce code échange les valeurs de deux variables.\nIl faut une variable temporaire pour ne pas perdre une valeur.",
+                "Ce code échange les valeurs de deux variables",
                 Arrays.asList(
                     "int x = 10;",
                     "int y = 20;",
@@ -48,7 +48,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 4",
-                "Ce code additionne tous les entiers de 1 à N\nen utilisant une boucle while.",
+                "Ce code additionne tous les entiers de 1 à N",
                 Arrays.asList(
                     "int n = 10;",
                     "int sum = 0;",
@@ -63,7 +63,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 5",
-                "Ce code vérifie si un nombre est pair ou impair\ngrâce à l'opérateur modulo %.",
+                "Ce code vérifie si un nombre est pair ou impair",
                 Arrays.asList(
                     "int n = 7;",
                     "if (n % 2 == 0)",
@@ -75,7 +75,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 6",
-                "Ce code parcourt un mot lettre par lettre\net compte combien de voyelles il contient.",
+                "Ce code parcourt un mot lettre par lettre",
                 Arrays.asList(
                     "String mot = \"magique\";",
                     "int count = 0;",
@@ -89,7 +89,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 7",
-                "Ce code calcule 2 exposant N\nen multipliant par 2 à chaque tour de boucle.",
+                "Ce code calcule 2 exposant N",
                 Arrays.asList(
                     "int n = 6;",
                     "int result = 1;",
@@ -102,7 +102,7 @@ public class PuzzleFactory {
 
             new Puzzle(
                 "Puzzle 8",
-                "Ce code retourne un mot à l'envers\nen le parcourant depuis la fin.",
+                "Ce code retourne un mot à l'envers",
                 Arrays.asList(
                     "String mot = \"sort\";",
                     "String inverse = \"\";",
