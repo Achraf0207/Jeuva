@@ -1,33 +1,25 @@
-# Jeuva
+<div align="center">
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+🧙‍♂️ Jeuva
+Le jeu éducatif magique pour apprendre Java en s'amusant !
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+</div>
 
-## Platforms
+---
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+📖 À propos du projet
+Jeuva est une aventure interactive destinée aux enfants de 8 à 11 ans.
+L'objectif est d'initier les plus jeunes à la logique de la programmation orientée objet à travers un univers féérique.
 
-## Gradle
+Le concept : Le joueur incarne un apprenti sorcier explorant une forêt magique. Pour progresser et surmonter les obstacles, il doit lancer des sorts en ordonnant correctement des blocs de code Java.
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+✨ Fonctionnalités (Aperçu)
+🧩 Apprentissage visuel : Manipulation de blocs de code pour comprendre la syntaxe sans frustration.
+🌲 Aventure immersive : Progression au sein d'une forêt magique remplie de défis.
+🪄 Sortilèges interactifs : Chaque combinaison de code réussie déclenche une action dans le jeu.
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+🚀 Comment lancer le jeu ?
+(Remplacez cette section par vos vraies instructions plus tard)
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+Clonez le dépôt sur votre machine :```bash
+git clone [https://github.com/Achraf0207/Jeuva.git](https://github.com/Achraf0207/Jeuva.git)
