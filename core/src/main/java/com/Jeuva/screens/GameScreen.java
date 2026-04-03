@@ -113,10 +113,25 @@ public class GameScreen implements Screen {
         spellZone.top().padTop(20);
         combatUI.addActor(spellZone); // Ajouté au GROUPE
 
-        Label.LabelStyle btnStyle = new Label.LabelStyle(codeFont, Color.valueOf("#FF5555"));
+        Label.LabelStyle btnStyle = new Label.LabelStyle(codeFont, Color.WHITE);
         Label btnValider = new Label("LANCER LE SORT !", btnStyle);
-        btnValider.setPosition(550, 160);
+        btnValider.setPosition(520, 160);
         combatUI.addActor(btnValider); // Ajouté au GROUPE
+
+        // --- LE BOUTON RÉINITIALISER ---
+        Label.LabelStyle resetStyle = new Label.LabelStyle(codeFont, Color.valueOf("#AAAAFF")); // Un bleu clair
+        Label btnReset = new Label("↺ REJOUER", resetStyle);
+        btnReset.setPosition(560, 160); // Au même endroit !
+        btnReset.setVisible(false); // Il est caché au début
+        combatUI.addActor(btnReset);
+
+        // --- LE POPUP DE MESSAGE
+        Label.LabelStyle popupStyle = new Label.LabelStyle(codeFont, Color.WHITE);
+        Label popupLabel = new Label("", popupStyle);
+        // On le centre bien haut dans l'écran pour qu'il soit bien visible (ex: Y = 600)
+        popupLabel.setPosition(350, 600);
+        popupLabel.setVisible(false);
+        stage.addActor(popupLabel);
 
         // --- 5. LE BOUTON "COMMENCER" ---
         Label.LabelStyle startStyle = new Label.LabelStyle(codeFont, Color.valueOf("#55FF55"));
@@ -136,11 +151,31 @@ public class GameScreen implements Screen {
         // --- 6. LE DRAG & DROP ET LES BLOCS ---
         DragAndDrop dragAndDrop = new DragAndDrop();
         String[] textesSort = { "\");", "System.out.print(\"", "Boule de feu" };
+        java.util.List<CodeBlockActor> tousLesBlocs = new java.util.ArrayList<>();
+
+        // Logique bouton Reset
+        btnReset.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                btnReset.setVisible(false); // On se recache
+                btnValider.setVisible(true); // On réaffiche "Lancer le sort"
+
+                // On vide les deux zones
+                reserveZone.clearChildren();
+                spellZone.clearChildren();
+
+                // On remet tous nos blocs sauvegardés dans la réserve (à gauche) !
+                for (CodeBlockActor bloc : tousLesBlocs) {
+                    reserveZone.add(bloc).pad(10).row();
+                }
+            }
+        });
 
         for (String texte : textesSort) {
             CodeBlockActor bloc = new CodeBlockActor(texte, codeFont, blockDrawable);
             bloc.pack();
             reserveZone.add(bloc).pad(10).row();
+            tousLesBlocs.add(bloc);
 
             dragAndDrop.addSource(new Source(bloc) {
                 @Override
@@ -185,11 +220,10 @@ public class GameScreen implements Screen {
             }
         });
 
-        // --- 7. LOGIQUE DE VALIDATION DU SORT ---
+        // --- 7. LOGIQUE DE VALIDATION ET ANIMATION ---
         btnValider.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // 1. Ton idée : on cache le bouton dès qu'on clique !
                 btnValider.setVisible(false);
 
                 StringBuilder sortJoueur = new StringBuilder();
@@ -202,56 +236,67 @@ public class GameScreen implements Screen {
                 String sortAttendu = "System.out.print(\"Boule de feu\");";
 
                 if (sortJoueur.toString().equals(sortAttendu)) {
-                    System.out.println("🧙‍♂️ SUCCES : Le monstre est vaincu !");
+                    // --- 1. LE POPUP DE SUCCÈS ---
+                    popupLabel.setText("SUCCES !");
+                    popupLabel.setColor(Color.valueOf("#55FF55")); // Vert
+                    popupLabel.clearActions(); // On annule les anciennes animations si on a rejoué
+                    popupLabel.addAction(Actions.sequence(
+                        Actions.alpha(0), // On le rend transparent
+                        Actions.visible(true), // On l'active
+                        Actions.fadeIn(0.5f), // Il apparaît en douceur (0.5s)
+                        Actions.delay(2f), // Il reste affiché 2 secondes
+                        Actions.fadeOut(0.5f), // Il disparaît en douceur
+                        Actions.visible(false)
+                    ));
 
-                    // --- ANIMATION DE SUCCÈS ---
-
-                    // a) Créer la boule de feu
+                    // (Ici tu gardes ton code actuel pour la boule de feu fireball.addAction(...) )
                     Texture fireballTex = new Texture(Gdx.files.internal("images/fireball.png"));
                     Image fireball = new Image(fireballTex);
                     fireball.setSize(60, 60);
-                    // On la place au niveau du magicien
                     fireball.setPosition(300, 130);
                     stage.addActor(fireball);
 
-                    // b) On l'anime ! Elle fonce vers le monstre (X=850), puis explose (disparaît)
                     fireball.addAction(Actions.sequence(
-                        Actions.moveTo(850, 130, 0.4f), // Se déplace en 0.4 secondes
+                        Actions.moveTo(850, 130, 0.4f),
                         Actions.run(() -> {
-                            fireball.remove(); // Supprime la boule de feu de l'écran
-                            fireballTex.dispose(); // Nettoie la mémoire
+                            fireball.remove();
+                            fireballTex.dispose();
 
-                            // c) Le monstre clignote en rouge pour montrer qu'il a mal !
                             monstre.addAction(Actions.sequence(
                                 Actions.color(Color.RED, 0.1f),
                                 Actions.color(Color.WHITE, 0.1f),
                                 Actions.color(Color.RED, 0.1f),
-                                Actions.color(Color.WHITE, 0.1f)
-                                // Plus tard : on le fera disparaître ou on affichera "Victoire"
+                                Actions.color(Color.WHITE, 0.1f),
+                                Actions.run(() -> btnReset.setVisible(true))
                             ));
                         })
                     ));
 
                 } else {
-                    System.out.println("❌ ECHEC : Le sort a rate ! Code actuel : " + sortJoueur.toString());
+                    // --- 2. LE POPUP D'ÉCHEC ---
+                    popupLabel.setText("ÉCHEC !");
+                    popupLabel.setColor(Color.valueOf("#FF5555")); // Rouge
+                    popupLabel.clearActions();
+                    popupLabel.addAction(Actions.sequence(
+                        Actions.alpha(0),
+                        Actions.visible(true),
+                        Actions.fadeIn(0.3f), // Apparaît plus vite (car c'est une alerte)
+                        Actions.delay(2f),
+                        Actions.fadeOut(0.5f),
+                        Actions.visible(false)
+                    ));
 
-                    // --- ANIMATION D'ÉCHEC ---
-
-                    // Le monstre avance vite, frappe le magicien, et recule
+                    // (Ici tu gardes ton code actuel pour l'attaque du monstre monstre.addAction(...) )
                     monstre.addAction(Actions.sequence(
-                        Actions.moveBy(-500, 0, 0.2f), // Fonce vers le mage
+                        Actions.moveBy(-500, 0, 0.2f),
                         Actions.run(() -> {
-                            // Le magicien clignote en rouge
                             magicien.addAction(Actions.sequence(
                                 Actions.color(Color.RED, 0.1f),
                                 Actions.color(Color.WHITE, 0.1f)
                             ));
                         }),
-                        Actions.moveBy(500, 0, 0.3f), // Le monstre retourne à sa place
-                        Actions.run(() -> {
-                            // On réaffiche le bouton pour que le joueur puisse réessayer !
-                            btnValider.setVisible(true);
-                        })
+                        Actions.moveBy(500, 0, 0.3f),
+                        Actions.run(() -> btnReset.setVisible(true))
                     ));
                 }
             }
