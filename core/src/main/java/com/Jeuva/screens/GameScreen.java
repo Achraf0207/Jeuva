@@ -2,6 +2,7 @@ package com.Jeuva.screens;
 
 import com.Jeuva.Jeuva;
 import com.Jeuva.models.LevelData;
+import com.Jeuva.screens.MainMenuScreen;
 import com.Jeuva.ui.CodeBlockActor;
 import com.Jeuva.utils.FontManager;
 import com.badlogic.gdx.Gdx;
@@ -60,6 +61,21 @@ public class GameScreen implements Screen {
         Image background = new Image(bgTexture);
         background.setSize(1280, 720);
         stage.addActor(background);
+
+        // --- LE BOUTON QUITTER LE DONJON ---
+        Label.LabelStyle retourStyle = new Label.LabelStyle(codeFont, Color.valueOf("#FF5555"));
+        Label btnRetour = new Label("< FUIR LE COMBAT (Menu)", retourStyle);
+        btnRetour.setPosition(30, 660); // En haut à gauche
+        stage.addActor(btnRetour); // Ajouté au stage principal pour être toujours visible
+
+        btnRetour.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // On ramène le joueur au menu principal
+                game.setScreen(new MainMenuScreen(game));
+                dispose(); // On détruit l'écran de jeu actuel
+            }
+        });
 
         // --- 2. CRÉATION DES COULEURS D'INTERFACE ---
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
