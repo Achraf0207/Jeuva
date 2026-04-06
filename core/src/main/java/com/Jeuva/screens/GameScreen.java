@@ -35,6 +35,9 @@ public class GameScreen implements Screen {
     private LevelData currentLevel;
     private Stage stage;
     private BitmapFont codeFont;
+    private Texture coeurTexture;
+    private Image[] coeursUI = new Image[3]; // Un tableau pour stocker nos 3 images de coeurs
+    private int viesJoueur = 3; // Le compteur de vies
 
     // Nouvelles textures pour le visuel
     private Texture bgTexture;
@@ -67,6 +70,16 @@ public class GameScreen implements Screen {
         Label btnRetour = new Label("< FUIR LE COMBAT (Menu)", retourStyle);
         btnRetour.setPosition(30, 660); // En haut à gauche
         stage.addActor(btnRetour); // Ajouté au stage principal pour être toujours visible
+
+        // --- LES POINTS DE VIE ---
+        coeurTexture = new Texture(Gdx.files.internal("images/heart.png"));
+        for (int i = 0; i < 3; i++) {
+            coeursUI[i] = new Image(coeurTexture);
+            coeursUI[i].setSize(40, 40);
+            // On les place en haut à droite. Chaque coeur est espacé de 50 pixels.
+            coeursUI[i].setPosition(1100 + (i * 50), 660);
+            stage.addActor(coeursUI[i]);
+        }
 
         btnRetour.addListener(new ClickListener() {
             @Override
@@ -292,31 +305,60 @@ public class GameScreen implements Screen {
                     ));
 
                 } else {
-                    // --- 2. LE POPUP D'ÉCHEC ---
-                    popupLabel.setText("ÉCHEC !");
-                    popupLabel.setColor(Color.valueOf("#FF5555")); // Rouge
-                    popupLabel.clearActions();
-                    popupLabel.addAction(Actions.sequence(
-                        Actions.alpha(0),
-                        Actions.visible(true),
-                        Actions.fadeIn(0.3f), // Apparaît plus vite (car c'est une alerte)
-                        Actions.delay(2f),
-                        Actions.fadeOut(0.5f),
-                        Actions.visible(false)
-                    ));
+                    // On diminue la vie !
+                    viesJoueur--;
 
-                    // (Ici tu gardes ton code actuel pour l'attaque du monstre monstre.addAction(...) )
-                    monstre.addAction(Actions.sequence(
-                        Actions.moveBy(-500, 0, 0.2f),
-                        Actions.run(() -> {
-                            magicien.addAction(Actions.sequence(
-                                Actions.color(Color.RED, 0.1f),
-                                Actions.color(Color.WHITE, 0.1f)
-                            ));
-                        }),
-                        Actions.moveBy(500, 0, 0.3f),
-                        Actions.run(() -> btnReset.setVisible(true))
-                    ));
+                    // On cache le coeur correspondant (si on passe à 2 vies, on cache le coeur d'index 2)
+                    if (viesJoueur >= 0) {
+                        coeursUI[viesJoueur].setVisible(false);
+                    }
+
+                    if (viesJoueur > 0) {
+                        // --- IL RESTE DE LA VIE : ANIMATION D'ÉCHEC CLASSIQUE ---
+                        popupLabel.setText("❌ Aïe ! Le monstre t'attaque ! (" + viesJoueur + " vies restantes)");
+                        popupLabel.setColor(Color.valueOf("#FF5555"));
+                        popupLabel.clearActions();
+                        popupLabel.addAction(Actions.sequence(
+                            Actions.alpha(0), Actions.visible(true), Actions.fadeIn(0.3f),
+                            Actions.delay(2f), Actions.fadeOut(0.5f), Actions.visible(false)
+                        ));
+
+                        monstre.addAction(Actions.sequence(
+                            Actions.moveBy(-500, 0, 0.2f),
+                            Actions.run(() -> {
+                                magicien.addAction(Actions.sequence(
+                                    Actions.color(Color.RED, 0.1f), Actions.color(Color.WHITE, 0.1f)
+                                ));
+                            }),
+                            Actions.moveBy(500, 0, 0.3f),
+                            Actions.run(() -> btnReset.setVisible(true)) // On permet de rejouer
+                        ));
+                    } else {
+                        // --- PLUS DE VIE : GAME OVER ---
+                        popupLabel.setText("☠️ GAME OVER : Le monstre t'a vaincu !");
+                        popupLabel.setColor(Color.RED);
+                        popupLabel.clearActions();
+                        popupLabel.addAction(Actions.sequence(
+                            Actions.alpha(0), Actions.visible(true), Actions.fadeIn(0.3f)
+                        ));
+
+                        // Le monstre attaque une dernière fois et on retourne au menu !
+                        monstre.addAction(Actions.sequence(
+                            Actions.moveBy(-500, 0, 0.2f),
+                            Actions.run(() -> {
+                                magicien.addAction(Actions.sequence(
+                                    Actions.color(Color.RED, 0.1f), Actions.color(Color.WHITE, 0.1f)
+                                ));
+                                magicien.setRotation(-90); // Le magicien tombe par terre !
+                            }),
+                            Actions.moveBy(500, 0, 0.3f),
+                            Actions.delay(2f), // On attend 2 secondes pour lire le Game Over
+                            Actions.run(() -> {
+                                game.setScreen(new MainMenuScreen(game)); // Retour au menu
+                                dispose();
+                            })
+                        ));
+                    }
                 }
             }
         });
@@ -347,11 +389,11 @@ public class GameScreen implements Screen {
     public void dispose() {
         if (stage != null) stage.dispose();
         if (codeFont != null) codeFont.dispose();
-        // TRÈS IMPORTANT : On détruit nos textures personnalisées pour éviter les fuites de mémoire
         if (bgTexture != null) bgTexture.dispose();
         if (zoneColorTexture != null) zoneColorTexture.dispose();
         if (blockColorTexture != null) blockColorTexture.dispose();
         if (magicienTexture != null) magicienTexture.dispose();
         if (monstreTexture != null) monstreTexture.dispose();
+        if (coeurTexture != null) coeurTexture.dispose();
     }
 }
