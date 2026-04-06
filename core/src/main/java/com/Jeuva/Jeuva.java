@@ -1,5 +1,7 @@
 package com.Jeuva;
 
+import com.Jeuva.models.LevelData;
+import com.Jeuva.screens.MainMenuScreen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.Jeuva.screens.GameScreen; // On va la créer juste après
@@ -11,11 +13,7 @@ public class Jeuva extends Game {
 
     @Override
     public void create() {
-        batch = new SpriteBatch();
-
-        // C'est ici qu'on définit l'écran de démarrage.
-        // Pour l'instant, on lance directement l'écran de jeu (on fera le menu plus tard).
-        this.setScreen(new GameScreen(this));
+        this.setScreen(new MainMenuScreen(this));
     }
 
     @Override
