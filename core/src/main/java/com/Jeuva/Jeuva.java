@@ -1,5 +1,6 @@
 package com.Jeuva;
 
+import com.Jeuva.models.LevelData;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.Jeuva.screens.GameScreen; // On va la créer juste après
@@ -11,11 +12,23 @@ public class Jeuva extends Game {
 
     @Override
     public void create() {
-        batch = new SpriteBatch();
+        // 1. On fabrique notre premier palier avec nos données
+        LevelData palier1 = new LevelData(
+            1,
+            "images/mushroom-monster.png",
+            "System.out.print(\"Boule de feu\");",
+            new String[]{"\");", "System.out.print(\"", "Boule de feu"}
+        );
 
-        // C'est ici qu'on définit l'écran de démarrage.
-        // Pour l'instant, on lance directement l'écran de jeu (on fera le menu plus tard).
-        this.setScreen(new GameScreen(this));
+        LevelData palier2 = new LevelData(
+            2,
+            "images/gobelin.png",
+            "int degats = 50;",
+            new String[]{"50;", "int ", "degats = "}
+        );
+
+        // 2. On lance l'écran de jeu en lui donnant ce palier !
+        this.setScreen(new GameScreen(this, palier1));
     }
 
     @Override

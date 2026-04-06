@@ -1,6 +1,7 @@
 package com.Jeuva.screens;
 
 import com.Jeuva.Jeuva;
+import com.Jeuva.models.LevelData;
 import com.Jeuva.ui.CodeBlockActor;
 import com.Jeuva.utils.FontManager;
 import com.badlogic.gdx.Gdx;
@@ -30,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 public class GameScreen implements Screen {
 
     private final Jeuva game;
+    private LevelData currentLevel;
     private Stage stage;
     private BitmapFont codeFont;
 
@@ -41,8 +43,9 @@ public class GameScreen implements Screen {
     private Texture monstreTexture;
 
 
-    public GameScreen(Jeuva game) {
+    public GameScreen(Jeuva game, LevelData level) {
         this.game = game;
+        this.currentLevel = level;
     }
 
     @Override
@@ -83,7 +86,7 @@ public class GameScreen implements Screen {
         )));
         stage.addActor(magicien);
 
-        monstreTexture = new Texture(Gdx.files.internal("images/mushroom-monster.png"));
+        monstreTexture = new Texture(Gdx.files.internal(currentLevel.getMonsterImagePath()));
         Image monstre = new Image(monstreTexture);
         monstre.setSize(120, 120);
         monstre.setPosition(850, 100); // Au niveau du sol
@@ -150,7 +153,7 @@ public class GameScreen implements Screen {
 
         // --- 6. LE DRAG & DROP ET LES BLOCS ---
         DragAndDrop dragAndDrop = new DragAndDrop();
-        String[] textesSort = { "\");", "System.out.print(\"", "Boule de feu" };
+        String[] textesSort = currentLevel.getAvailableBlocks();
         java.util.List<CodeBlockActor> tousLesBlocs = new java.util.ArrayList<>();
 
         // Logique bouton Reset
@@ -233,7 +236,7 @@ public class GameScreen implements Screen {
                     }
                 }
 
-                String sortAttendu = "System.out.print(\"Boule de feu\");";
+                String sortAttendu = currentLevel.getExpectedCode();
 
                 if (sortJoueur.toString().equals(sortAttendu)) {
                     // --- 1. LE POPUP DE SUCCÈS ---
