@@ -61,12 +61,7 @@ public class MainMenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // On crée le palier 1 et on lance le jeu !
-                LevelData palier1 = new LevelData(
-                    1,
-                    "images/mushroom-monster.png",
-                    "System.out.print(\"Boule de feu\");",
-                    new String[]{"\");", "System.out.print(\"", "Boule de feu"}
-                );
+                LevelData palier1 = LevelData.getLevel(1);
                 game.setScreen(new GameScreen(game, palier1));
                 dispose(); // On détruit le menu pour libérer la mémoire
             }

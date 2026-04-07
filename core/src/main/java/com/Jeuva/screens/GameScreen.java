@@ -157,6 +157,31 @@ public class GameScreen implements Screen {
         btnReset.setVisible(false); // Il est caché au début
         combatUI.addActor(btnReset);
 
+        // --- LE BOUTON NIVEAU SUIVANT ---
+        Label.LabelStyle nextStyle = new Label.LabelStyle(codeFont, Color.valueOf("#FFD700")); // Doré !
+        Label btnNextLevel = new Label("NIVEAU SUIVANT >", nextStyle);
+        btnNextLevel.setPosition(520, 160); // Même endroit que le bouton Valider
+        btnNextLevel.setVisible(false);
+        combatUI.addActor(btnNextLevel);
+
+        btnNextLevel.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // On demande le niveau d'après !
+                LevelData prochainNiveau = LevelData.getLevel(currentLevel.getId() + 1);
+
+                if (prochainNiveau != null) {
+                    // Si le niveau existe, on relance un GameScreen avec les nouvelles données !
+                    game.setScreen(new GameScreen(game, prochainNiveau));
+                } else {
+                    // S'il n'y a plus de niveau, c'est la victoire totale, retour au menu !
+                    System.out.println("🎉 FÉLICITATIONS, TU AS FINI LE JEU !");
+                    game.setScreen(new MainMenuScreen(game));
+                }
+                dispose(); // On détruit l'écran actuel
+            }
+        });
+
         // --- LE POPUP DE MESSAGE
         Label.LabelStyle popupStyle = new Label.LabelStyle(codeFont, Color.WHITE);
         Label popupLabel = new Label("", popupStyle);
@@ -299,7 +324,8 @@ public class GameScreen implements Screen {
                                 Actions.color(Color.WHITE, 0.1f),
                                 Actions.color(Color.RED, 0.1f),
                                 Actions.color(Color.WHITE, 0.1f),
-                                Actions.run(() -> btnReset.setVisible(true))
+                                Actions.fadeOut(0.5f),
+                                Actions.run(() -> btnNextLevel.setVisible(true))
                             ));
                         })
                     ));
