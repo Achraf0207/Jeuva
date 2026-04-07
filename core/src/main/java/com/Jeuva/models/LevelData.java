@@ -5,13 +5,15 @@ public class LevelData {
     private String monsterImagePath;// Le chemin vers l'image du monstre (ex: "images/monstre.png")
     private String expectedCode;    // Le code parfait pour gagner (ex: "System.out.print(\"Boule de feu\");")
     private String[] availableBlocks; // Les morceaux de code mélangés qu'on donne au joueur
+    private String hint;
 
     // Le Constructeur : c'est lui qui permet de fabriquer un niveau !
-    public LevelData(int id, String monsterImagePath, String expectedCode, String[] availableBlocks) {
+    public LevelData(int id, String monsterImagePath, String expectedCode, String[] availableBlocks, String hint) {
         this.id = id;
         this.monsterImagePath = monsterImagePath;
         this.expectedCode = expectedCode;
         this.availableBlocks = availableBlocks;
+        this.hint = hint;
     }
 
     // --- Les Getters (pour que GameScreen puisse lire ces infos) ---
@@ -32,6 +34,9 @@ public class LevelData {
         return availableBlocks;
     }
 
+    public String getHint() { return hint; }
+
+
     // --- L'USINE À NIVEAUX --
     public static LevelData getLevel(int niveauId) {
         if (niveauId == 1) {
@@ -39,21 +44,19 @@ public class LevelData {
                 1,
                 "images/mushroom-monster.png",
                 "System.out.print(\"Boule de feu\");",
-                new String[]{"\");", "System.out.print(\"", "Boule de feu"}
+                new String[]{"\");", "System.out.print(\"", "Boule de feu"},
+                "📖 GRIMOIRE : Pour parler, utilise le sort d'affichage.\n N'oublie pas la majuscule à 'System' et le point-virgule à la fin !"
             );
         }
         else if (niveauId == 2) {
-            // Un nouveau palier sur les variables !
-            // (On réutilise l'image du monstre pour l'instant, tu pourras la changer plus tard)
             return new LevelData(
                 2,
-                "images/goblin.png",
+                "images/gobelin.png", // (J'ai mis ton gobelin !)
                 "int mana = 100;",
-                new String[]{"100;", "int ", "mana = "}
+                new String[]{"100;", "int ", "mana = "},
+                 "📖 GRIMOIRE : Pour stocker un nombre entier (sans virgule),\nutilise la bourse de type 'int'."
             );
         }
-
-        // Si le niveau n'existe pas (le joueur a fini le jeu)
         return null;
     }
 }

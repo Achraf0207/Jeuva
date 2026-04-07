@@ -91,6 +91,27 @@ public class GameScreen implements Screen {
             }
         });
 
+        // --- LE POPUP D'ASTUCE (Caché par défaut) ---
+        Label.LabelStyle hintStyle = new Label.LabelStyle(codeFont, Color.valueOf("#AAAAFF")); // Bleu clair
+        Label hintLabel = new Label(currentLevel.getHint(), hintStyle);
+        hintLabel.setPosition(350, 500); // Au centre, au-dessus des blocs
+        hintLabel.setVisible(false); // On le cache au début !
+        stage.addActor(hintLabel);
+
+        // --- LE BOUTON D'AIDE ---
+        Label.LabelStyle btnAideStyle = new Label.LabelStyle(codeFont, Color.valueOf("#55FF55"));
+        Label btnAide = new Label("[?] CONSULTER LE GRIMOIRE", btnAideStyle);
+        btnAide.setPosition(30, 600); // En haut à gauche, sous le bouton fuir
+        stage.addActor(btnAide);
+
+        btnAide.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Quand on clique, on inverse la visibilité (si c'est caché ça s'affiche, et inversement)
+                hintLabel.setVisible(!hintLabel.isVisible());
+            }
+        });
+
         // --- 2. CRÉATION DES COULEURS D'INTERFACE ---
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
 
