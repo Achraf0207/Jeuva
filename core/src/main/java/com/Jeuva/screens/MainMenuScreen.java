@@ -60,10 +60,9 @@ public class MainMenuScreen implements Screen {
         btnJouer.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // On crée le palier 1 et on lance le jeu !
-                LevelData palier1 = LevelData.getLevel(1);
-                game.setScreen(new GameScreen(game, palier1));
-                dispose(); // On détruit le menu pour libérer la mémoire
+                // 👉 MODIFICATION : On lance la carte du monde !
+                game.setScreen(new MapScreen(game));
+                dispose();
             }
         });
 

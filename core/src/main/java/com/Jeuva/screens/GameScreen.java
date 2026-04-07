@@ -6,6 +6,7 @@ import com.Jeuva.screens.MainMenuScreen;
 import com.Jeuva.ui.CodeBlockActor;
 import com.Jeuva.utils.FontManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -167,18 +168,26 @@ public class GameScreen implements Screen {
         btnNextLevel.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // On demande le niveau d'après !
-                LevelData prochainNiveau = LevelData.getLevel(currentLevel.getId() + 1);
+                int prochainId = currentLevel.getId() + 1;
+                LevelData prochainNiveau = LevelData.getLevel(prochainId);
+
+                // --- ON SAUVEGARDE LA PROGRESSION ---
+                Preferences sauvegarde = Gdx.app.getPreferences("jeuva_save");
+                int niveauMaxActuel = sauvegarde.getInteger("maxLevel", 1);
+
+                // Si le niveau qu'on vient de débloquer est plus grand que notre record, on met à jour !
+                if (prochainId > niveauMaxActuel) {
+                    sauvegarde.putInteger("maxLevel", prochainId);
+                    sauvegarde.flush(); // On écrit physiquement sur le disque dur
+                }
 
                 if (prochainNiveau != null) {
-                    // Si le niveau existe, on relance un GameScreen avec les nouvelles données !
                     game.setScreen(new GameScreen(game, prochainNiveau));
                 } else {
-                    // S'il n'y a plus de niveau, c'est la victoire totale, retour au menu !
-                    System.out.println("🎉 FÉLICITATIONS, TU AS FINI LE JEU !");
-                    game.setScreen(new MainMenuScreen(game));
+                    // Si on a fini le jeu, on retourne à la carte au lieu du menu !
+                    game.setScreen(new MapScreen(game));
                 }
-                dispose(); // On détruit l'écran actuel
+                dispose();
             }
         });
 
