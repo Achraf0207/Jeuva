@@ -10,23 +10,24 @@ public class Jeuva extends Game {
     // Le SpriteBatch est l'outil qui dessine les images.
     // On le met ici pour le partager entre tous les écrans et économiser de la mémoire.
     public SpriteBatch batch;
+    private String currentSlot = "slot1";
 
     @Override
     public void create() {
         this.setScreen(new MainMenuScreen(this));
     }
 
+    public void setCurrentSlot(String slot) { this.currentSlot = slot; }
+    public String getCurrentSlot() { return this.currentSlot; }
+
     @Override
     public void render() {
-        // Très important : appelle le render() de la classe Game
-        // pour qu'il délègue l'affichage à l'écran actif (GameScreen)
         super.render();
     }
 
     @Override
     public void dispose() {
         batch.dispose();
-        // On nettoie aussi l'écran actuel
         if (screen != null) screen.dispose();
     }
 }

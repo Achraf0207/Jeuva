@@ -5,15 +5,18 @@ import com.Jeuva.utils.FontManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -23,151 +26,257 @@ public class CourseScreen implements Screen {
 
     private final Jeuva game;
     private Stage stage;
-    private BitmapFont titleFont;
-    private BitmapFont textFont;
-    private Texture bgTexture;
-    private Texture overlayTexture;
 
-    // Les labels qui vont changer quand on clique sur un chapitre
-    private Label titreChapitreLabel;
-    private Label contenuChapitreLabel;
+    private BitmapFont titleFont, textFont, magicFont, buttonFont;
+    private Texture bgTexture, bookTexture, scrollTexture;
 
+    // Textures pour les boutons Kenney
+    private Texture btnUpTex, btnDownTex, btnHoverTex;
+    private TextButton.TextButtonStyle buttonStyle;
+
+    private Label titreChapitreLabel, contenuChapitreLabel, astuceLabel;
+    private Table pageDroiteTable;
+
+    // L'ID du niveau depuis lequel on arrive (pour ouvrir la bonne page)
+    private int targetLevelId = -1;
+
+    // Constructeur 1 : Accès depuis le Menu Principal
     public CourseScreen(Jeuva game) {
         this.game = game;
     }
 
+    // Constructeur 2 : Accès depuis le Game Over d'un niveau (Redirection intelligente)
+    public CourseScreen(Jeuva game, int targetLevelId) {
+        this.game = game;
+        this.targetLevelId = targetLevelId;
+    }
+
     @Override
     public void show() {
+        initStage();
+        initFonts();
+        loadTextures();
+        setupBackground();
+        setupGrimoire();
+        setupRetourButton();
+
+        // 🎯 REDIRECTION INTELLIGENTE
+        int chapitreAAfficher = 1; // Par défaut : Variables
+
+        if (targetLevelId >= 1 && targetLevelId <= 3) chapitreAAfficher = 1;      // Niveaux 1 à 3 -> Variables
+        else if (targetLevelId == 4) chapitreAAfficher = 2;                       // Niveau 4 -> Tableaux
+        else if (targetLevelId == 5 || targetLevelId == 6) chapitreAAfficher = 3; // Niveaux 5 et 6 -> Conditions
+        else if (targetLevelId == 7 || targetLevelId == 8) chapitreAAfficher = 4; // Niveaux 7 et 8 -> Boucles
+        else if (targetLevelId == 9 || targetLevelId == 10) chapitreAAfficher = 5;// Niveaux 9 et 10 -> Classes et Objets
+
+        chargerLecon(chapitreAAfficher);
+    }
+
+    private void initStage() {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
+    }
 
-        titleFont = FontManager.generateCodeFont(36);
-        textFont = FontManager.generateCodeFont(24);
+    private void initFonts() {
+        titleFont = FontManager.generateCodeFont(32);
+        textFont = FontManager.generateCodeFont(19);
+        magicFont = FontManager.generateCodeFont(17);
+        buttonFont = FontManager.generateCodeFont(20);
 
-        // --- 1. LE FOND ---
-        bgTexture = new Texture(Gdx.files.internal("images/mist-forest.png"));
+        titleFont.getData().markupEnabled = true;
+        textFont.getData().markupEnabled = true;
+        magicFont.getData().markupEnabled = true;
+    }
+
+    private void loadTextures() {
+        bgTexture = new Texture(Gdx.files.internal("images/Battleground.png"));
+        bookTexture = new Texture(Gdx.files.internal("images/open-book.png"));
+        scrollTexture = new Texture(Gdx.files.internal("images/scroll-bg.png"));
+
+        // Textures des boutons Kenney
+        btnUpTex = new Texture(Gdx.files.internal("images/UI/Double/button_brown.png"));
+        btnDownTex = new Texture(Gdx.files.internal("images/UI/Double/button_grey.png"));
+        btnHoverTex = new Texture(Gdx.files.internal("images/UI/Double/button_red.png"));
+
+        NinePatch btnUpPatch = new NinePatch(btnUpTex, 15, 15, 15, 15);
+        NinePatch btnDownPatch = new NinePatch(btnDownTex, 15, 15, 15, 15);
+        NinePatch btnHoverPatch = new NinePatch(btnHoverTex, 15, 15, 15, 15);
+
+        buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.up = new NinePatchDrawable(btnUpPatch);
+        buttonStyle.down = new NinePatchDrawable(btnDownPatch);
+        buttonStyle.over = new NinePatchDrawable(btnHoverPatch);
+        buttonStyle.font = buttonFont;
+        buttonStyle.fontColor = Color.valueOf("#5C4033");
+    }
+
+    private void setupBackground() {
         Image background = new Image(bgTexture);
         background.setSize(1280, 720);
+        background.setColor(0.35f, 0.35f, 0.35f, 1f); // On assombrit pour faire ressortir le livre
         stage.addActor(background);
+    }
 
-        // --- 2. LE GRIMOIRE (La grande boîte) ---
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(new Color(0f, 0f, 0f, 0.85f));
-        pixmap.fill();
-        overlayTexture = new Texture(pixmap);
-        pixmap.dispose();
-
+    private void setupGrimoire() {
         Table grimoire = new Table();
-        grimoire.setBackground(new TextureRegionDrawable(overlayTexture));
-        grimoire.setSize(1100, 550);
-        grimoire.setPosition(90, 80);
+        grimoire.setBackground(new TextureRegionDrawable(bookTexture));
+        grimoire.setSize(1100, 600);
+        grimoire.setPosition(90, 60);
         stage.addActor(grimoire);
 
-        // --- 3. MISE EN PAGE : GAUCHE (Sommaire) / DROITE (Texte) ---
-        Table sommaireTable = new Table();
-        sommaireTable.top().pad(30); // On met un peu plus de marge interne
+        Table pageGauche = createPageGauche();
+        pageDroiteTable = createPageDroite();
 
-        Table contenuTable = new Table();
-        contenuTable.top().pad(30);
+        grimoire.add(pageGauche).width(550).fill();
+        grimoire.add(pageDroiteTable).width(550).fill();
+    }
 
-        // 👉 CORRECTION DE L'ESPACE : On fixe la largeur des colonnes et on ajoute "padRight(60)" pour les espacer !
-        // Le grimoire fait 1100px. On donne 300 à gauche, 60 d'espace, et 680 à droite (300+60+680 = 1040).
-        grimoire.add(sommaireTable).width(300).padRight(60).expandY().fillY();
-        grimoire.add(contenuTable).width(680).expandY().fillY();
+    private Table createPageGauche() {
+        Table pageGauche = new Table();
+        // 👉 Modification du padding gauche de la page pour un meilleur alignement global (de 90 à 70)
+        pageGauche.top().pad(70, 70, 40, 30); // Haut, Gauche, Bas, Droite
 
-        // --- 4. LA PAGE DE DROITE (Le texte dynamique) ---
-        Label.LabelStyle titleStyle = new Label.LabelStyle(titleFont, Color.valueOf("#FFCC00"));
-        Label.LabelStyle textStyle = new Label.LabelStyle(textFont, Color.WHITE);
+        Label sommaireTitre = new Label("[#4A2E19]~ INDEX DES SORTS ~", new Label.LabelStyle(titleFont, Color.WHITE));
+        pageGauche.add(sommaireTitre).padBottom(30).row();
 
-        titreChapitreLabel = new Label("SÉLECTIONNE UN CHAPITRE", titleStyle);
-        // 👉 CORRECTION MAJEURE : On force le titre à revenir à la ligne s'il est trop long !
-        titreChapitreLabel.setWrap(true);
-        titreChapitreLabel.setAlignment(Align.topLeft);
+        Table boutonsTable = new Table();
+        ajouterBoutonChapitre(boutonsTable, "1. Les Variables", 1);
+        ajouterBoutonChapitre(boutonsTable, "2. Les Tableaux", 2);
+        ajouterBoutonChapitre(boutonsTable, "3. Les Conditions", 3);
+        ajouterBoutonChapitre(boutonsTable, "4. Les Boucles", 4);
+        ajouterBoutonChapitre(boutonsTable, "5. Classes et Objets", 5);
 
-        contenuChapitreLabel = new Label("Ouvre l'esprit, jeune apprenti. Les secrets de la Forêt de Java t'attendent dans les pages de gauche...", textStyle);
+        pageGauche.add(boutonsTable).left().expandX().row();
+
+        Table astuceBox = new Table();
+        astuceBox.setBackground(new TextureRegionDrawable(scrollTexture));
+
+        astuceLabel = new Label("🦉 [#228B22]Maître Hibou :[]\nApprends les bases pour devenir un puissant mage !",
+            new Label.LabelStyle(magicFont, Color.BLACK));
+        astuceLabel.setWrap(true);
+        astuceLabel.setAlignment(Align.center);
+
+        // 👉 CORRECTION 1 : Augmentation du padding latéral pour contenir le texte dans le parchemin (pad(25) -> pad(25, 45, 25, 45))
+        astuceBox.add(astuceLabel).width(320).pad(25, 45, 25, 45).padTop(35); // Haut, Gauche, Bas, Droite
+        pageGauche.add(astuceBox).size(400, 160).bottom().padBottom(10);
+
+        return pageGauche;
+    }
+
+    private Table createPageDroite() {
+        Table pageDroite = new Table();
+        // 👉 Modification du padding gauche de la page pour un meilleur alignement (de 30 à 50)
+        pageDroite.top().pad(70, 50, 40, 90); // Haut, Gauche, Bas, Droite
+
+        // 👉 CORRECTION 2 : Changement de couleur pour le titre pour une lisibilité parfaite (#B8860B -> #5C4033)
+        Label.LabelStyle titreStyle = new Label.LabelStyle(titleFont, Color.valueOf("#5C4033"));
+        titreChapitreLabel = new Label("TITRE DU CHAPITRE", titreStyle);
+        titreChapitreLabel.setAlignment(Align.center);
+
+        contenuChapitreLabel = new Label("", new Label.LabelStyle(textFont, Color.valueOf("#2C1E16")));
         contenuChapitreLabel.setWrap(true);
         contenuChapitreLabel.setAlignment(Align.topLeft);
 
-        // 👉 CORRECTION DE LA LARGEUR : On force les labels à ne jamais dépasser la taille de la colonne (680)
-        contenuTable.add(titreChapitreLabel).width(680).padBottom(30).row();
-        contenuTable.add(contenuChapitreLabel).width(680).expandY().fillY().row();
+        pageDroite.add(titreChapitreLabel).width(420).padBottom(25).row();
+        pageDroite.add(contenuChapitreLabel).width(420).top().expand();
 
-        // --- 5. LA PAGE DE GAUCHE (Les boutons du Sommaire) ---
-        Label.LabelStyle menuTitleStyle = new Label.LabelStyle(titleFont, Color.valueOf("#AAAAAA"));
-        sommaireTable.add(new Label("--- INDEX ---", menuTitleStyle)).padBottom(30).row();
+        return pageDroite;
+    }
 
-        ajouterBoutonChapitre(sommaireTable, "> Chapitre 1 : La Voix", 1);
-        ajouterBoutonChapitre(sommaireTable, "> Chapitre 2 : Les Bourses", 2);
-        ajouterBoutonChapitre(sommaireTable, "> Chapitre 3 : Les Boucles", 3);
-
-        // --- 6. LE BOUTON RETOUR ---
-        Label.LabelStyle btnStyle = new Label.LabelStyle(titleFont, Color.valueOf("#FF5555"));
-        Label btnRetour = new Label("< FERMER LE GRIMOIRE", btnStyle);
-        btnRetour.setPosition(50, 660);
-        stage.addActor(btnRetour);
-
+    private void setupRetourButton() {
+        // Utilisation du même style de bouton que le reste du jeu
+        TextButton btnRetour = new TextButton("RETOUR AU MENU", buttonStyle);
+        btnRetour.setSize(250, 60);
+        // Positionné en haut à gauche
+        btnRetour.setPosition(100, 640);
         btnRetour.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new MainMenuScreen(game));
-                dispose();
             }
         });
+        stage.addActor(btnRetour);
     }
 
-    // --- MÉTHODE POUR CRÉER LES BOUTONS DU SOMMAIRE ---
-    private void ajouterBoutonChapitre(Table table, String texte, final int chapitreId) {
-        Label.LabelStyle btnStyle = new Label.LabelStyle(textFont, Color.valueOf("#55FF55"));
-        Label bouton = new Label(texte, btnStyle);
+    private void ajouterBoutonChapitre(Table table, String texte, final int id) {
+        TextButton btnChapitre = new TextButton(texte, buttonStyle);
 
-        bouton.addListener(new ClickListener() {
+        btnChapitre.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                chargerChapitre(chapitreId); // Change le texte à droite quand on clique !
+                chargerLecon(id);
+                // Animation douce pour la page de droite
+                pageDroiteTable.addAction(Actions.sequence(Actions.alpha(0), Actions.fadeIn(0.4f)));
             }
         });
 
-        table.add(bouton).padBottom(20).align(Align.left).row();
+        table.add(btnChapitre).size(350, 55).padBottom(10).row();
     }
 
-    // --- MÉTHODE MAGIQUE QUI CONTIENT L'HISTOIRE ---
-    private void chargerChapitre(int id) {
+    private void chargerLecon(int id) {
+        String titre = "", contenu = "", astuce = "";
+
         switch (id) {
-            case 1:
-                titreChapitreLabel.setText("CHAPITRE 1 : LA VOIX MAGIQUE");
-                contenuChapitreLabel.setText(
-                    "Pour interagir avec les créatures de la Forêt, un mage doit projeter sa voix. " +
-                        "En langage Java, on n'utilise pas ses cordes vocales, mais le sort d'affichage.\n\n" +
-                        "Formule : System.out.print(\"Ton message\");\n\n" +
-                        "Règles du sortilège :\n" +
-                        "1. Invoque le grand 'S' majuscule au début.\n" +
-                        "2. Enferme tes mots entre les guillemets (\").\n" +
-                        "3. Scelle ton sort avec un point-virgule (;) à la fin, sinon la magie s'échappe !"
-                );
+            case 1: {
+                titre = "SACS À CRISTAUX (VARIABLES)";
+                contenu = "Les variables sont des sacs pour stocker tes trésors et caractéristiques :\n\n" +
+                    "• [BLUE]int[] : Pour les nombres entiers.\n  [DARK_GRAY]Ex: int vie = 100;[]\n\n" +
+                    "• [BLUE]String[] : Pour le texte (entre guillemets).\n  [DARK_GRAY]Ex: String nom = \"Merlin\";[]\n\n" +
+                    "• [BLUE]boolean[] : Pour vrai ou faux.\n  [DARK_GRAY]Ex: boolean enVie = true;[]";
+                astuce = "🦉 [#228B22]Maître Hibou :[]\nN'oublie jamais de donner une valeur à ta variable avec le signe '=' !";
                 break;
-            case 2:
-                titreChapitreLabel.setText("CHAPITRE 2 : BOURSES DE MANA (Variables)");
-                contenuChapitreLabel.setText(
-                    "Un mage ne peut pas tout retenir de tête. Pour stocker de l'énergie, des points de vie ou des noms, on utilise des 'Bourses magiques' appelées Variables.\n\n" +
-                        "Formule : int mana = 100;\n\n" +
-                        "Ici, tu as créé une bourse appelée 'mana', et tu y as glissé 100 cristaux d'énergie. Le mot 'int' signifie 'Entier', car on ne coupe pas un cristal en deux !\n" +
-                        "Si tu veux stocker un mot magique, utilise une bourse de type 'String' (chaîne de caractères)."
-                );
+            }
+            case 2: {
+                titre = "L'INVENTAIRE (TABLEAUX)";
+                contenu = "Un tableau permet de stocker plusieurs objets du même type dans un seul grand sac.\n\n" +
+                    "On ajoute des crochets [BLUE][][] après le type :\n\n" +
+                    "[BLUE]String[] sorts = {\"Feu\", \"Glace\"};[]\n\n" +
+                    "• Les éléments sont séparés par des virgules.\n" +
+                    "• Ils sont entourés par des accolades [RED]{}[] !";
+                astuce = "🦉 [#228B22]Maître Hibou :[]\nLes tableaux sont parfaits pour transporter tout ton grimoire de sorts d'un seul coup.";
                 break;
-            case 3:
-                titreChapitreLabel.setText("CHAPITRE 3 : LES BOUCLES TEMPORELLES");
-                contenuChapitreLabel.setText(
-                    "Face à une armée de gobelins, jeter un sort 100 fois t'épuiserait. Heureusement, tu peux créer une anomalie temporelle : la boucle 'for' !\n\n" +
-                        "Formule :\nfor(int i = 0; i < 3; i++) {\n   System.out.print(\"Feu !\");\n}\n\n" +
-                        "Cette incantation va tirer 3 boules de feu automatiquement. La magie opère entre les accolades { ... } !"
-                );
+            }
+            case 3: {
+                titre = "LE MIROIR (CONDITIONS)";
+                contenu = "Le sort [PURPLE]if[] (SI) permet à ton mage de prendre des décisions selon la situation :\n\n" +
+                    "[BLUE]if (vie < 50) {[]\n" +
+                    "   boirePotion();\n" +
+                    "[BLUE]} else {[]\n" +
+                    "   attaquer();\n" +
+                    "[BLUE]}[]\n\n" +
+                    "Si la condition est vraie, on fait la première action, [PURPLE]else[] (sinon), on fait la deuxième !";
+                astuce = "🦉 [#228B22]Maître Hibou :[]\nLa condition doit toujours être entre parenthèses '( )'.";
                 break;
+            }
+            case 4: {
+                titre = "SPIRALE (BOUCLES)";
+                contenu = "Marre de répéter un sort ? Automatise-le !\n\n" +
+                    "• La boucle [PURPLE]for[] compte un nombre de fois précis :\n" +
+                    "[BLUE]for(int i=0; i<3; i++) {[] lancerFeu(); [BLUE]}[]\n\n" +
+                    "• La boucle [PURPLE]while[] (tant que) tourne jusqu'à ce qu'une condition change :\n" +
+                    "[BLUE]while(mana < 100) {[] mediter(); [BLUE]}[]";
+                astuce = "🦉 [#228B22]Maître Hibou :[]\n'i++' est un raccourci magique qui signifie qu'on ajoute +1 à chaque tour !";
+                break;
+            }
+            case 5: {
+                titre = "L'ÂME (CLASSES ET OBJETS)";
+                contenu = "Une [PURPLE]class[] (Classe) est le plan de construction de ton personnage.\n" +
+                    "[BLUE]class Mage { int vie = 100; }[]\n\n" +
+                    "Pour donner vie à ce plan dans le monde, tu dois l'instancier, c'est-à-dire créer un Objet avec le mot [PURPLE]new[] :\n\n" +
+                    "[BLUE]Mage monHeros = new Mage();[]";
+                astuce = "🦉 [#228B22]Maître Hibou :[]\nTout en Java est construit autour des Objets. Tu es maintenant un vrai Créateur !";
+                break;
+            }
         }
+
+        titreChapitreLabel.setText(titre);
+        contenuChapitreLabel.setText(contenu);
+        astuceLabel.setText(astuce);
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(Color.BLACK);
+        ScreenUtils.clear(0, 0, 0, 1);
         stage.act(delta);
         stage.draw();
     }
@@ -183,7 +292,13 @@ public class CourseScreen implements Screen {
         if (stage != null) stage.dispose();
         if (titleFont != null) titleFont.dispose();
         if (textFont != null) textFont.dispose();
+        if (magicFont != null) magicFont.dispose();
+        if (buttonFont != null) buttonFont.dispose();
         if (bgTexture != null) bgTexture.dispose();
-        if (overlayTexture != null) overlayTexture.dispose();
+        if (bookTexture != null) bookTexture.dispose();
+        if (scrollTexture != null) scrollTexture.dispose();
+        if (btnUpTex != null) btnUpTex.dispose();
+        if (btnDownTex != null) btnDownTex.dispose();
+        if (btnHoverTex != null) btnHoverTex.dispose();
     }
 }
